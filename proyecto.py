@@ -82,6 +82,16 @@ def limpiar_valores(df):
     return df
 
 
+def saldo(row):
+    ingreso_acum = df.loc[(df.Movimiento == "Ingreso") & (df.Fecha <= row.Fecha)][
+        "Importe"
+    ].sum()
+    egreso_acum = df.loc[(df.Movimiento == "Egreso") & (df.Fecha <= row.Fecha)][
+        "Importe"
+    ].sum()
+    return ingreso_acum - egreso_acum
+
+
 while True:
     event, values = window.read()
     if event == sg.WIN_CLOSED or event == "Salir":
@@ -91,6 +101,7 @@ while True:
     if event == "Guardar":
         new_record = pd.DataFrame(values, index=[0])
         df = pd.concat([limpiar_valores(new_record), df], ignore_index=True)
+        df["Saldo"] = df.apply(saldo, axis=1)
         df.to_excel(EXCEL_FILE, index=False)
         sg.popup("Guardado!")
         clear_input()
